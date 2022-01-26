@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	Verbose   int              `yaml:"verbose"`
 	Redirects []SingleRedirect `yaml:"redirects"`
 }
 
