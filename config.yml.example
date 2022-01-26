@@ -6,6 +6,6 @@
 verbose: 2
 redirects:
   - src: :8080
-    dst: ya.r:80
+    dst: ya.ru:80
   - src: :8081
     dst: 127.0.0.1:8384
