@@ -2,14 +2,29 @@ package main
 
 import (
 	"io"
+	"log"
 	"net"
+	"time"
 
 	"github.com/pkg/errors"
 )
 
+const (
+	listenRetryTimeout = time.Second
+)
+
 func main() {
-	r := NewRedirect(":8080", "ya.ru:80")
-	r.listen()
+	conf, err := parseConfig()
+	if err != nil {
+		log.Fatal("Cannot load config: ", err)
+	}
+
+	for _, redirect := range conf.Redirects {
+		r := NewRedirect(redirect.Src, redirect.Dst)
+		go r.listenWithRetry()
+	}
+
+	select {} // eternal sleep
 }
 
 func NewRedirect(source, dest string) *Redirect {
@@ -22,6 +37,16 @@ func NewRedirect(source, dest string) *Redirect {
 type Redirect struct {
 	source string
 	dest   string
+}
+
+func (r *Redirect) listenWithRetry() {
+	ticker := time.NewTicker(listenRetryTimeout)
+	for {
+		log.Printf("Started listening %s -> %s", r.source, r.dest)
+		err := r.listen()
+		log.Printf("Listen %s -> %s ended, retrying... err=%v", r.source, r.dest, err)
+		<-ticker.C
+	}
 }
 
 func (r *Redirect) listen() error {
