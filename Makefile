@@ -24,3 +24,6 @@ restart: stop start
 
 logs:
 	sudo docker logs --tail 100 -f ${IMAGE}
+
+status:
+	sudo docker stats ${IMAGE} || echo "Status: stopped"
