@@ -2,7 +2,7 @@
 IMAGE:=redirector
 
 build:
-	sudo docker build -t redirector .
+	sudo docker build -t ${IMAGE} .
 
 run:
 	go run github.com/pav5000/redirector/cmd/redirector
