@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -13,8 +13,9 @@ type Config struct {
 }
 
 type SingleRedirect struct {
-	Src string `yaml:"src"`
-	Dst string `yaml:"dst"`
+	Src     string `yaml:"src"`
+	Dst     string `yaml:"dst"`
+	UnixDst string `yaml:"unix-dst"`
 }
 
 func parseConfig() (Config, error) {

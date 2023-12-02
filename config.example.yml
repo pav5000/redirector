@@ -9,3 +9,5 @@ redirects:
     dst: google.com:80
   - src: 127.0.0.1:8081 # listens only specific address
     dst: 192.168.1.2:123
+  - src: 127.0.0.1:8082 # redirects to unix socket
+    unix-dst: some/path/socket.sock

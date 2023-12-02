@@ -25,7 +25,10 @@ func main() {
 	}
 
 	for _, redirect := range conf.Redirects {
-		r := NewRedirect(redirect.Src, redirect.Dst, conf.Verbose)
+		r, err := NewRedirect(redirect, conf.Verbose)
+		if err != nil {
+			log.Fatal("cannot create redirect:", err)
+		}
 		go r.listenWithRetry()
 	}
 
@@ -36,18 +39,35 @@ func main() {
 	select {} // eternal sleep
 }
 
-func NewRedirect(source, dest string, verbose int) *Redirect {
-	return &Redirect{
-		verbose: verbose,
-		source:  source,
-		dest:    dest,
+func NewRedirect(conf SingleRedirect, verbose int) (*Redirect, error) {
+	if len(conf.Dst) > 0 && len(conf.UnixDst) > 0 {
+		return nil, errors.New("you cannot use both unix-dst and dst in one redirect")
 	}
+	if conf.Dst == "" && conf.UnixDst == "" {
+		return nil, errors.New("destination is empty")
+	}
+	if conf.Src == "" {
+		return nil, errors.New("source is empty")
+	}
+	r := &Redirect{
+		verbose:   verbose,
+		source:    conf.Src,
+		dest:      conf.Dst,
+		destProto: "tcp",
+	}
+	if r.dest == "" {
+		r.dest = conf.UnixDst
+		r.destProto = "unix"
+	}
+	return r, nil
 }
 
 type Redirect struct {
 	verbose int
 	source  string
 	dest    string
+
+	destProto string
 }
 
 func (r *Redirect) listenWithRetry() {
@@ -87,7 +107,7 @@ func (r *Redirect) handleConnection(incoming net.Conn) error {
 
 	r.logPrintf(LogLevelAllConns, "New connection %s -> %s", incoming.RemoteAddr().String(), r.dest)
 
-	outgoing, err := net.Dial("tcp", r.dest)
+	outgoing, err := net.Dial(r.destProto, r.dest)
 	if err != nil {
 		r.logPrintf(LogLevelDialErrors, "Cannot open new connection to %s: %s", r.dest, err.Error())
 		return errors.Wrap(err, "net.Dial")
