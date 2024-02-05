@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io"
 	"log"
 	"net"
@@ -19,7 +20,11 @@ const (
 )
 
 func main() {
-	conf, err := parseConfig()
+	var paramConfigFile string
+	flag.StringVar(&paramConfigFile, "config", "config.yml", "Config file to read")
+	flag.Parse()
+
+	conf, err := parseConfig(paramConfigFile)
 	if err != nil {
 		log.Fatal("Cannot load config: ", err)
 	}
