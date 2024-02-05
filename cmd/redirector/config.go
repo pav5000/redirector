@@ -18,8 +18,8 @@ type SingleRedirect struct {
 	UnixDst string `yaml:"unix-dst"`
 }
 
-func parseConfig() (Config, error) {
-	rawData, err := os.ReadFile("config.yml")
+func parseConfig(configFile string) (Config, error) {
+	rawData, err := os.ReadFile(configFile)
 	if err != nil {
 		return Config{}, errors.Wrap(err, "os.ReadFile")
 	}
